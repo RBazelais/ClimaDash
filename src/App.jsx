@@ -12,6 +12,7 @@ const ClimaDash = () => {
 	const [error, setError] = useState(null);
 	const [city, setCity] = useState("");
 	const [currentCity, setCurrentCity] = useState(""); // Track the city that data was fetched for
+	const [tempUnit, setTempUnit] = useState("celsius"); // "celsius" or "fahrenheit"
 
 	// Function to determine weather category based on weather code
 	const getWeatherCategory = (weatherCode) => {
@@ -132,6 +133,19 @@ const ClimaDash = () => {
 		}
 	};
 
+	// Convert temperature based on unit preference
+	const convertTemp = (tempCelsius) => {
+		if (tempUnit === "fahrenheit") {
+			return Math.round((tempCelsius * 9) / 5 + 32);
+		}
+		return Math.round(tempCelsius);
+	};
+
+	// Get temperature unit symbol
+	const getTempUnit = () => {
+		return tempUnit === "fahrenheit" ? "°F" : "°C";
+	};
+
 	// Filter data based on search and category
 	const filteredData = forecastData.filter((day) => {
 		const matchesSearch = day.weather.description
@@ -144,9 +158,10 @@ const ClimaDash = () => {
 
 	// Calculate summary statistics
 	const maxTemp =
-		forecastData.length > 0
-			? Math.max(...forecastData.map((d) => d.high_temp))
-			: 0;
+    forecastData.length > 0
+        ? Math.round(
+			Math.max(...forecastData.map((d) => convertTemp(d.high_temp)))
+		) : 0;
 	const avgHumidity =
 		forecastData.length > 0
 			? Math.round(
@@ -184,18 +199,44 @@ const ClimaDash = () => {
 
 	const getWeatherIcon = (iconCode) => {
 		const iconMap = {
-			"01d": "☀️",
-			"02d": "⛅",
-			"03d": "☁️",
-			"04d": "☁️",
-			"09d": "🌧️",
-			"10d": "🌦️",
-			"11d": "⛈️",
-			"13d": "❄️",
-			"50d": "🌫️",
+			"01d": "☀️", "01n": "🌙", "02d": "⛅", "02n": "☁️", "03d": "☁️", "03n": "☁️",
+			"04d": "☁️", "04n": "☁️", "09d": "🌧️", "09n": "🌧️", "10d": "🌦️", "10n": "🌧️",
+			"11d": "⛈️", "11n": "⛈️", "13d": "❄️", "13n": "❄️", "50d": "🌫️", "50n": "🌫️",
+			"a01d": "☀️", "a01n": "🌙", "a02d": "⛅", "a02n": "☁️", "a03d": "☁️", "a03n": "☁️",
+			"a04d": "☁️", "a04n": "☁️", "a05d": "🌫️", "a05n": "🌫️", "a06d": "🌫️", "a06n": "🌫️",
+			"c01d": "☀️", "c01n": "🌙", "c02d": "⛅", "c02n": "☁️", "c03d": "☁️", "c03n": "☁️",
+			"c04d": "☁️", "c04n": "☁️", "d01d": "🌧️", "d01n": "🌧️", "d02d": "🌧️", "d02n": "🌧️",
+			"d03d": "🌧️", "d03n": "🌧️", "f01d": "❄️", "f01n": "❄️", "r01d": "🌦️", "r01n": "🌧️",
+			"r02d": "🌦️", "r02n": "🌧️", "r03d": "🌧️", "r03n": "🌧️", "r04d": "🌧️", "r04n": "🌧️",
+			"r05d": "🌧️", "r05n": "🌧️", "r06d": "🌧️", "r06n": "🌧️", "s01d": "❄️", "s01n": "❄️",
+			"s02d": "❄️", "s02n": "❄️", "s03d": "❄️", "s03n": "❄️", "s04d": "❄️", "s04n": "❄️",
+			"s05d": "❄️", "s05n": "❄️", "s06d": "❄️", "s06n": "❄️", "t01d": "⛈️", "t01n": "⛈️",
+			"t02d": "⛈️", "t02n": "⛈️", "t03d": "⛈️", "t03n": "⛈️", "t04d": "⛈️", "t04n": "⛈️",
+			"t05d": "⛈️", "t05n": "⛈️"
 		};
 		return iconMap[iconCode] || "🌤️";
 	};
+
+	useEffect(() => {
+		const fetchDefaultCityData = async () => {
+			try {
+				setLoading(true);
+				const [forecastResult, airQualityResult] = await Promise.all([
+					fetchForecastData("Seattle"),
+					fetchAirQualityData("Seattle"),
+				]);
+				setForecastData(forecastResult);
+				setAirQuality(airQualityResult);
+				setCurrentCity("Seattle");
+			} catch {
+				setError("Failed to fetch default city data");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchDefaultCityData();
+	}, []); // Empty dependency array ensures this runs only once
 
 	if (loading) {
 		return (
@@ -260,7 +301,7 @@ const ClimaDash = () => {
 					<div className='summary-cards'>
 						<div className='card'>
 							<div className='card-value'>
-								{maxTemp.toFixed(1)}°C
+								{maxTemp} {getTempUnit()}
 							</div>
 							<div className='card-label'>Max Temperature</div>
 						</div>
@@ -285,21 +326,28 @@ const ClimaDash = () => {
 				)}
 
 				<div className='controls'>
-					<div className='city-input-container'>
+					<div
+						className='city-input-container'
+						style={{
+							display: "flex",
+							alignItems: "center",
+							marginBottom: "16px",
+						}}
+					>
 						<input
 							type='text'
 							placeholder='Enter city name...'
 							value={city}
 							onChange={(e) => setCity(e.target.value)}
-							onKeyPress={handleKeyPress}
+							onKeyDown={handleKeyPress}
 							className='city-input'
+							style={{ flex: "1", marginRight: "8px" }}
 						/>
 						<button
 							onClick={handleSearch}
 							disabled={loading || !city.trim()}
 							className='search-button'
 							style={{
-								marginLeft: "8px",
 								padding: "8px 16px",
 								backgroundColor:
 									loading || !city.trim()
@@ -312,10 +360,25 @@ const ClimaDash = () => {
 									loading || !city.trim()
 										? "not-allowed"
 										: "pointer",
+								whiteSpace: "nowrap",
 							}}
 						>
 							{loading ? "Searching..." : "Search"}
 						</button>
+					</div>
+
+					<div
+						className='filter-container'
+						style={{ marginBottom: "16px" }}
+					>
+						<select
+							value={tempUnit}
+							onChange={(e) => setTempUnit(e.target.value)}
+							className='filter-select'
+						>
+							<option value='celsius'>Celsius (°C)</option>
+							<option value='fahrenheit'>Fahrenheit (°F)</option>
+						</select>
 					</div>
 
 					{forecastData.length > 0 && (
@@ -345,6 +408,9 @@ const ClimaDash = () => {
 									<option value='Rain'>Rain</option>
 									<option value='Snow'>Snow</option>
 									<option value='Storm'>Storm</option>
+									<option value='Atmosphere'>
+										Atmosphere
+									</option>
 								</select>
 							</div>
 						</>
@@ -355,8 +421,12 @@ const ClimaDash = () => {
 					<div className='forecast-table'>
 						<div className='table-header'>
 							<div className='table-header-cell'>Date</div>
-							<div className='table-header-cell'>High °C</div>
-							<div className='table-header-cell'>Low °C</div>
+							<div className='table-header-cell'>
+								High {getTempUnit()}
+							</div>
+							<div className='table-header-cell'>
+								Low {getTempUnit()}
+							</div>
 							<div className='table-header-cell'>Weather</div>
 							<div className='table-header-cell'>Icon</div>
 							<div className='table-header-cell'>Wind m/s</div>
@@ -370,10 +440,10 @@ const ClimaDash = () => {
 										{formatDate(day.datetime)}
 									</div>
 									<div className='table-cell'>
-										{day.high_temp.toFixed(1)}°
+										{convertTemp(day.high_temp)}°
 									</div>
 									<div className='table-cell'>
-										{day.low_temp.toFixed(1)}°
+										{convertTemp(day.low_temp)}°
 									</div>
 									<div className='table-cell'>
 										{day.weather.description}
@@ -382,10 +452,10 @@ const ClimaDash = () => {
 										{getWeatherIcon(day.weather.icon)}
 									</div>
 									<div className='table-cell'>
-										{day.wind_spd.toFixed(1)}
+										{Math.round(day.wind_spd)} m/s
 									</div>
 									<div className='table-cell'>
-										{day.uv.toFixed(1)}
+										{Math.round(day.uv)}
 									</div>
 								</div>
 							))}

@@ -34,14 +34,13 @@ The following **optional** features are implemented:
 
 The following **additional** features are implemented:
 
-* [ ] List anything else that you added to improve the site's functionality!
+* [ ] Summary cards now show temperatures in the selected unit
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-![Video Walkthrough](./src/assets/ClimaDashv1.gif "Video Walkthrough")
-
+![Video Walkthrough](https://submissions.us-east-1.linodeobjects.com/web102/Q-oH_35r.gif "Video Walkthrough")
 
 GIF created with ... LICEcap
 
