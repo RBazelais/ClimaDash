@@ -25,7 +25,7 @@ The following **required** functionality is completed:
   - The filter **correctly** filters items in the list, only displaying items matching the filter attribute in the dashboard
   - The dashboard list dynamically updates as the user adjusts the filter
 
-The following **optional** features are implemented:
+The following **optional** features have yet to be implemented:
 
 - [ ] Multiple filters can be applied simultaneously
 - [ ] Filters use different input types
@@ -44,17 +44,12 @@ Here's a walkthrough of implemented user stories:
 
 GIF created with ... LICEcap
 
-## Notes
-
-Describe any challenges encountered while building the app.
-- Getting the VITE rules right was tough
-
 ## License
 
     Copyright 2025 Rachel Bazelais
 
     Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
+    You may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
